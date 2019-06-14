@@ -1,0 +1,13 @@
+.root {
+    margin: auto;
+    width: 70%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+}
+
+.resultContainer {
+    width: 49%;
+    text-align: center;
+    line-height: 3;
+}
