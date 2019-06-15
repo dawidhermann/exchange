@@ -19,7 +19,9 @@ export default function CurrencyList(props: CurrencyListProps) {
         return <MenuItem key={currency} value={currency}>{currency}</MenuItem>
     });
     const handleChange = (event: React.ChangeEvent<{ name?: string; value: string }>): void => {
-        setCurrency(event.target.value);
+        if (setCurrency) {
+            setCurrency(event.target.value);
+        }
     };
 
     return (

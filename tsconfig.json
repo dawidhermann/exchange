@@ -1,11 +1,23 @@
 {
 	"compilerOptions": {
-		"outDir": "./dist/",
-		"noImplicitAny": true,
+		"baseUrl": "./src",
+		"rootDir": "./src",
+		"outDir": "./build",
+		"module": "commonjs",
 		"target": "es5",
-		"lib": ["es5", "es6", "dom"],
+		"lib": ["es7", "dom"],
 		"jsx": "react",
 		"allowJs": true,
+		"sourceMap": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"strictNullChecks": true,
 		"moduleResolution": "node"
-	}
+	},
+	"include": [
+		"./src/**/*"
+	]
 }
