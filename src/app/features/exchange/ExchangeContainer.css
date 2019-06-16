@@ -17,3 +17,7 @@
     text-align: center;
     line-height: 3;
 }
+
+body {
+    margin: 0;
+}

@@ -5,25 +5,29 @@ import { map } from 'rxjs/operators';
 import CurrencyList from './currencyList/CurrencyList';
 import ExchangeInput from './exchangeInput/ExchangeInput';
 import * as Labels from '../../labels';
-import Loader from '../common/Loader';
+import Loader from '../common/loader/Loader';
 import { getLatestExchangeValue } from './requests';
+import AppToolbar from '../common/toolbar/Toolbar';
+import useToolbar from '../common/toolbar/useToolbar';
 import './ExchangeContainer.css';
 
-export interface ContextUpdater<T> {
+interface ValueUpdater<T> {
     (value: T): void;
 }
 
-export const CurrencyContext: React.Context<ContextUpdater<string>|null> = React.createContext<ContextUpdater<string>|null>(null);
-export const ExchangeContext: React.Context<ContextUpdater<number>|null> = React.createContext<ContextUpdater<number>|null>(null);
+export const CurrencyContext: React.Context<ValueUpdater<string>|null> = React.createContext<ValueUpdater<string>|null>(null);
+export const ExchangeContext: React.Context<ValueUpdater<number>|null> = React.createContext<ValueUpdater<number>|null>(null);
 
 export default function ExchangeContainer(): JSX.Element {
     const [ currencyList, setCurrencyList ] = React.useState<string[]>([]);
     const [ showLoader, setShowLoader ] = React.useState<boolean>(false);
+    const [ toolbarTitle ] = React.useState<string>(Labels.TITLE);
     const [ exchangeData, setExchangeData ] = React.useState<IExchangeRates>();
     const [ exchangeValue, setExchangeValue ] = React.useState<number>(1);
     const [ sourceCurrency, setSourceCurrency ] = React.useState<string>("");
     const [ targetCurrency, setTargetCurrency ] = React.useState<string>("");
-    
+    const setTitle = useToolbar();
+
     React.useEffect(() => {
         setShowLoader(true);
         const observable: Observable<Promise<IExchangeResult>> = from(getLatestExchangeValue(sourceCurrency))
@@ -41,6 +45,7 @@ export default function ExchangeContainer(): JSX.Element {
             }
             setExchangeData(data.rates);
             setTimeout(() => setShowLoader(false), 500);
+            setTitle(`Currency exchange from ${ sourceCurrency }`);
         });
 
         return () => {
@@ -71,22 +76,25 @@ export default function ExchangeContainer(): JSX.Element {
     }
 
     return (
-        <div className="mainContainer">
-            <div className="root">
-                <ExchangeContext.Provider value={exchangeValueHandler}>
-                    <ExchangeInput value={exchangeValue} label={Labels.EXCHANGE_VALUE}/>
-                </ExchangeContext.Provider>
-                <ExchangeInput value={getExchangeResult(exchangeResult)} label={Labels.EXCHANGE_RESULT} disabled/>
+        <React.Fragment>
+            <AppToolbar title={toolbarTitle} />
+            <div className="mainContainer">
+                <div className="root">
+                    <ExchangeContext.Provider value={exchangeValueHandler}>
+                        <ExchangeInput value={exchangeValue} label={Labels.EXCHANGE_VALUE} />
+                    </ExchangeContext.Provider>
+                    <ExchangeInput value={getExchangeResult(exchangeResult)} label={Labels.EXCHANGE_RESULT} disabled />
+                </div>
+                <div className="root">
+                    <CurrencyContext.Provider value={setSourceCurrency}>
+                        <CurrencyList currencyList={currencyList} selectedCurrency={sourceCurrency} label={Labels.SOURCE_CURRENCY} />
+                    </CurrencyContext.Provider>
+                    <CurrencyContext.Provider value={setTargetCurrency}>
+                        <CurrencyList currencyList={targetCurrencyList} selectedCurrency={targetCurrency} label={Labels.TARGET_CURRENCY} />
+                    </CurrencyContext.Provider>
+                </div>
             </div>
-            <div className="root">
-                <CurrencyContext.Provider value={setSourceCurrency}>
-                    <CurrencyList currencyList={currencyList} selectedCurrency={sourceCurrency} label={Labels.SOURCE_CURRENCY} />
-                </CurrencyContext.Provider>
-                <CurrencyContext.Provider value={setTargetCurrency}>
-                    <CurrencyList currencyList={targetCurrencyList} selectedCurrency={targetCurrency} label={Labels.TARGET_CURRENCY} />
-                </CurrencyContext.Provider>
-            </div>
-        </div>
+        </React.Fragment>
     );
 }
 
