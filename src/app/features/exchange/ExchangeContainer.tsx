@@ -9,6 +9,7 @@ import Loader from '../common/loader/Loader';
 import { getLatestExchangeValue } from './requests';
 import AppToolbar from '../common/toolbar/Toolbar';
 import useToolbar from '../common/toolbar/useToolbar';
+import InfoDialog, { DialogType } from '../common/dialog/InfoDialog';
 import './ExchangeContainer.css';
 
 interface ValueUpdater<T> {
@@ -21,6 +22,7 @@ export const ExchangeContext: React.Context<ValueUpdater<number>|null> = React.c
 export default function ExchangeContainer(): JSX.Element {
     const [ currencyList, setCurrencyList ] = React.useState<string[]>([]);
     const [ showLoader, setShowLoader ] = React.useState<boolean>(false);
+    const [ showError, setShowError ] = React.useState<boolean>(false);
     const [ toolbarTitle ] = React.useState<string>(Labels.TITLE);
     const [ exchangeData, setExchangeData ] = React.useState<IExchangeRates>();
     const [ exchangeValue, setExchangeValue ] = React.useState<number>(1);
@@ -46,6 +48,8 @@ export default function ExchangeContainer(): JSX.Element {
             setExchangeData(data.rates);
             setTimeout(() => setShowLoader(false), 500);
             setTitle(`Currency exchange from ${ sourceCurrency }`);
+        }, (): void => {
+            setShowError(true);
         });
 
         return () => {
@@ -57,7 +61,11 @@ export default function ExchangeContainer(): JSX.Element {
         return currencyList.filter((currency: string): boolean => {
             return !_.isEqual(currency, sourceCurrency);
         });
-    }, [sourceCurrency]);
+    }, [sourceCurrency, showError]);
+
+    if (showError) {
+        return <InfoDialog message={Labels.FETCHING_ERROR} isOpen={showError} dialogType={DialogType.ERROR} />
+    }
 
     if (showLoader || _.isEmpty(currencyList)) {
         return <Loader />;
